@@ -1,0 +1,44 @@
+# cloudbuild.yaml
+
+steps:
+  # Step 1: Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/total-vertex-401719/kaur-Repo:$COMMIT_SHA', '.']
+
+  # Step 2: Push Docker image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/total-vertex-401719/kaur-Repo:$COMMIT_SHA']
+
+options:
+  # Set defaultLogsBucketBehavior
+  defaultLogsBucket: 'gs://your-log-bucket-name'
+  defaultLogsBucketLocation: 'your-region'
+
+triggers:
+  - name: 'dc-karmdeep-100847316'
+    description: 'Trigger build on push'
+    triggerTemplate:
+      projectId: 'total-vertex-401719'
+      repoName: 'kaur-Repo'
+      branchName: '.*' # Trigger on all branches
+    filename: 'cloudbuild.yaml' # Path to this Cloud Build config file
+    disabled: false # Enable the trigger
+    substitutions:
+      _CLOUD_BUILD_TRIGGER_NAME: 'dc-karmdeep-100847316'
+      _REPO_NAME: 'kaur-Repo'
+    build: # Specify build configuration
+      projectId: 'total-vertex-401719'
+      timeout: '1200s' # 20 minutes
+      options:
+        substitutionOption: 'ALLOW_LOOSE'
+      logsBucket: 'gs://your-log-bucket-name'
+      logStreamingOption: 'STREAM_ON' # Stream logs to Cloud Logging
+      source:
+        repoSource:
+          projectId: 'total-vertex-401719'
+          repoName: 'kaur-Repo'
+      substitutions:
+        _CLOUD_BUILD_TRIGGER_NAME: 'dc-karmdeep-100847316'
+        _REPO_NAME: 'kaur-Repo'
+      approvalConfig:
+        approvalRequired: true # Require manual approval
